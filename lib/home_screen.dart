@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'habit_creation_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -29,7 +30,10 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to habit creation screen (to be implemented later)
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => HabitCreationScreen()),
+          );
         },
         child: Icon(Icons.add),
       ),
