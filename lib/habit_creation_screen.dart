@@ -60,7 +60,7 @@ class _HabitCreationScreenState extends State<HabitCreationScreen> {
             if (selectedFrequency == 'Custom')
               TextField(
                 controller: customIntervalController,
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   labelText: 'Custom Interval (in hours)',
                   border: OutlineInputBorder(),
@@ -110,7 +110,7 @@ class _HabitCreationScreenState extends State<HabitCreationScreen> {
         showError('Please enter a custom interval');
         return false;
       }
-      final customIntervalValue = int.tryParse(customInterval);
+      final customIntervalValue = double.tryParse(customInterval);
       if (customIntervalValue == null || customIntervalValue <= 0) {
         showError('Custom interval must be a positive number');
         return false;
