@@ -6,11 +6,13 @@ class HabitCreationScreen extends StatefulWidget {
 }
 
 class _HabitCreationScreenState extends State<HabitCreationScreen> {
-  String selectedFrequency = 'Daily'; // Default selection
+  TextEditingController habitNameController = TextEditingController();
   TextEditingController customIntervalController = TextEditingController();
+  String selectedFrequency = 'Daily'; // Default frequency option
 
   @override
   void dispose() {
+    habitNameController.dispose();
     customIntervalController.dispose();
     super.dispose();
   }
@@ -27,9 +29,11 @@ class _HabitCreationScreenState extends State<HabitCreationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
+              controller: habitNameController,
               decoration: InputDecoration(
                 labelText: 'Habit Name',
                 border: OutlineInputBorder(),
+                hintText: 'e.g., Drink Water',
               ),
             ),
             SizedBox(height: 16),
@@ -54,39 +58,70 @@ class _HabitCreationScreenState extends State<HabitCreationScreen> {
             ),
             SizedBox(height: 16),
             if (selectedFrequency == 'Custom')
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: customIntervalController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Custom Interval (in hours)',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Example: Enter "3" for every 3 hours.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+              TextField(
+                controller: customIntervalController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Custom Interval (in hours)',
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter a number',
+                ),
               ),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Save the habit with the selected frequency
-                String habitFrequency = selectedFrequency == 'Custom'
-                    ? '${customIntervalController.text} hours'
+                if (!isHabitNameValid() || !isFrequencyValid()) return;
+
+                String frequency = selectedFrequency == 'Custom'
+                    ? '${customIntervalController.text.trim()} hours'
                     : selectedFrequency;
-                print('Habit Frequency: $habitFrequency');
-                Navigator.pop(context); // Return to the home screen
+
+                Navigator.pop(context, {
+                  'name': habitNameController.text.trim(),
+                  'frequency': frequency,
+                });
               },
               child: Text('Save Habit'),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // Helper Methods - These stay within the _HabitCreationScreenState class
+  bool isHabitNameValid() {
+    String habitName = habitNameController.text.trim();
+    if (habitName.isEmpty) {
+      showError('Please enter a habit name');
+      return false;
+    }
+    return true;
+  }
+
+  bool isFrequencyValid() {
+    if (selectedFrequency.isEmpty) {
+      showError('Please select a frequency');
+      return false;
+    }
+    if (selectedFrequency == 'Custom') {
+      String customInterval = customIntervalController.text.trim();
+      if (customInterval.isEmpty) {
+        showError('Please enter a custom interval');
+        return false;
+      }
+      final customIntervalValue = int.tryParse(customInterval);
+      if (customIntervalValue == null || customIntervalValue <= 0) {
+        showError('Custom interval must be a positive number');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }
