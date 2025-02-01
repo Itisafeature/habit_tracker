@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../database/habit_database.dart';
 // import 'package:habittrack/database/habit_database.dart';
 
+const String currentUserId = "test_user";
+
 class HabitCreationScreen extends StatefulWidget {
   @override
   _HabitCreationScreenState createState() => _HabitCreationScreenState();
@@ -74,15 +76,20 @@ class _HabitCreationScreenState extends State<HabitCreationScreen> {
               onPressed: () async {
                 if (!isHabitNameValid() || !isFrequencyValid()) return;
 
+                print('Save button clicked!'); // ✅ Confirms button press
+
                 String habitName = habitNameController.text.trim();
                 String frequency = selectedFrequency == 'Custom'
                     ? '${customIntervalController.text.trim()} hours'
                     : selectedFrequency;
 
                 final habit = {
+                  'userId': currentUserId,
                   'name': habitName,
                   'frequency': frequency,
                 };
+
+                print('New habit data: $habit');
 
                 // Save habit in the database
                 await HabitDatabase.instance.insertHabit(habit);

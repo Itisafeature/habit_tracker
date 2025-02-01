@@ -1,13 +1,35 @@
 import 'package:flutter/material.dart';
 import 'habit_creation_screen.dart';
+import '../database/habit_database.dart';
+
+const String currentUserId =
+    "test_user"; // Placeholder until authentication is added
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, String>> habits = []; // List to store habits
+class HomeScreenState extends State<HomeScreen> {
+  List<Map<String, dynamic>> habits = []; // List to store habits
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHabits(); // Fetch habits when the screen loads
+  }
+
+  // Fetch habits from SQLite and update the UI
+  Future<void> _loadHabits() async {
+    final loadedHabits = await HabitDatabase.instance.getHabits();
+    print('Loaded habits from database: $loadedHabits');
+
+    setState(() {
+      habits = loadedHabits;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +37,15 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text('HabitTrack+'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+              await HabitDatabase.instance.clearDatabase();
+              _loadHabits(); // Refresh UI
+            },
+          ),
+        ],
       ),
       body: habits.isEmpty
           ? Center(
@@ -28,9 +59,17 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 final habit = habits[index];
                 return ListTile(
-                  title: Text(habit['name']!),
-                  subtitle: Text(habit['frequency']!),
-                  trailing: Icon(Icons.check_circle_outline),
+                  key: ValueKey(habit['id']), // Keeps track of unique items
+                  title: Text(habit['name']),
+                  subtitle: Text(habit['frequency']),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      await HabitDatabase.instance
+                          .deleteHabit(habit['id'], currentUserId);
+                      _loadHabits(); // Refresh UI after deletion
+                    },
+                  ),
                 );
               },
             ),
@@ -42,9 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
 
           if (newHabit != null) {
-            setState(() {
-              habits.add(newHabit);
-            });
+            _loadHabits(); // Reload habits from database
           }
         },
         child: Icon(Icons.add),

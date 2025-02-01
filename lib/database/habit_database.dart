@@ -30,6 +30,7 @@ class HabitDatabase {
     await db.execute('''
       CREATE TABLE habits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId TEXT NOT NULL,
         name TEXT NOT NULL,
         frequency TEXT NOT NULL
       )
@@ -46,8 +47,24 @@ class HabitDatabase {
     return await db.query('habits');
   }
 
+  Future<void> deleteHabit(int id, String userId) async {
+    final db = await instance.database;
+    await db.delete('habits',
+        where: 'id = ? AND userId = ?', whereArgs: [id, userId]);
+  }
+
+  Future<void> updateHabit(int id, Map<String, dynamic> updatedHabit) async {
+    final db = await instance.database;
+    await db.update('habits', updatedHabit, where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<void> close() async {
     final db = await instance.database;
     db.close();
+  }
+
+  Future<void> clearDatabase() async {
+    final db = await instance.database;
+    await db.delete('habits'); // Deletes all rows in the habits table
   }
 }
