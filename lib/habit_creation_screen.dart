@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../database/habit_database.dart';
-// import 'package:habittrack/database/habit_database.dart';
+import '../services/habit_service.dart';
 
 const String currentUserId = "test_user";
 
@@ -92,7 +91,8 @@ class _HabitCreationScreenState extends State<HabitCreationScreen> {
                 print('New habit data: $habit');
 
                 // Save habit in the database
-                await HabitDatabase.instance.insertHabit(habit);
+                final habitService = HabitService();
+                await habitService.saveHabit(habit);
 
                 if (!context.mounted) return;
 

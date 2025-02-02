@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'habit_creation_screen.dart';
-import '../database/habit_database.dart';
+import '../services/habit_service.dart';
 
 const String currentUserId =
     "test_user"; // Placeholder until authentication is added
@@ -14,17 +14,18 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> habits = []; // List to store habits
+  late final HabitService habitService;
 
   @override
   void initState() {
     super.initState();
+    habitService = HabitService();
     _loadHabits(); // Fetch habits when the screen loads
   }
 
   // Fetch habits from SQLite and update the UI
   Future<void> _loadHabits() async {
-    final loadedHabits = await HabitDatabase.instance.getHabits();
-    print('Loaded habits from database: $loadedHabits');
+    final loadedHabits = await habitService.getHabits();
 
     setState(() {
       habits = loadedHabits;
@@ -41,7 +42,7 @@ class HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () async {
-              await HabitDatabase.instance.clearDatabase();
+              await habitService.clearHabits();
               _loadHabits(); // Refresh UI
             },
           ),
@@ -65,8 +66,8 @@ class HomeScreenState extends State<HomeScreen> {
                   trailing: IconButton(
                     icon: Icon(Icons.delete, color: Colors.red),
                     onPressed: () async {
-                      await HabitDatabase.instance
-                          .deleteHabit(habit['id'], currentUserId);
+                      await habitService.deleteHabit(
+                          habit['id'], currentUserId);
                       _loadHabits(); // Refresh UI after deletion
                     },
                   ),
